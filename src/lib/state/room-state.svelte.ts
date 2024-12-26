@@ -1,7 +1,7 @@
 import { getContext, setContext } from 'svelte';
 import _ from 'lodash';
 import { MyState } from '$lib/state/_my-state.svelte';
-import { type RoomType } from '$lib/types/RoomType';
+import { type RoomType } from '$lib/types/room/RoomType';
 
 class RoomState extends MyState {
 	constructor(room: Promise<RoomType>) {
