@@ -9,8 +9,20 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
-<div class="m-auto h-full w-[400px] content-center">
-	<h1 class="py-5 text-center text-4xl">Schedgeon</h1>
+<!-- Top vignette -->
+<div
+	class="absolute left-0 top-0 z-[-1] h-1/4 w-full bg-gradient-to-b from-black to-transparent opacity-25"
+></div>
+
+<!-- Bottom vignette -->
+<div
+	class="absolute bottom-0 left-0 z-[-1] h-1/4 w-full bg-gradient-to-t from-black to-transparent opacity-25"
+></div>
+
+<!-- Login/Signup -->
+<div class="m-auto h-full max-w-[400px] content-center px-2">
+	<h1 class="text-center text-4xl">Schedgeon</h1>
+	<h2 class="mb-4 text-center text-sm text-muted-foreground">Start schedging today.</h2>
 
 	<Tabs.Root value={SIGNIN}>
 		<Tabs.List class="grid w-full grid-cols-2">

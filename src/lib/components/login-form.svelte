@@ -9,6 +9,8 @@
 		type LoginSchema,
 		type RegisterSchema
 	} from '$lib/schemas/AuthSchema';
+	import LoadingSpinner from '$lib/components/ui/loading-spinner.svelte';
+	import PasswordInput from '$lib/components/ui/password-input.svelte';
 
 	let {
 		dataForm,
@@ -24,8 +26,7 @@
 		validators: zodClient(isRegister ? registerSchema : loginSchema)
 	});
 
-	const { form: formData, errors, enhance } = form;
-	const hasErrors = $derived(Object.keys($errors).length !== 0);
+	const { form: formData, submitting, allErrors, enhance } = form;
 </script>
 
 <form method="POST" action={actionStr} use:enhance>
@@ -33,7 +34,7 @@
 		<Form.Control>
 			{#snippet children({ props })}
 				<Form.Label>{'Email'}</Form.Label>
-				<Input {...props} bind:value={$formData.email} />
+				<Input disabled={$submitting} {...props} bind:value={$formData.email} />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />
@@ -42,7 +43,7 @@
 		<Form.Control>
 			{#snippet children({ props })}
 				<Form.Label>{'Password'}</Form.Label>
-				<Input {...props} bind:value={$formData.password} type="password" />
+				<PasswordInput disabled={$submitting} bind:password={$formData.password} {...props} />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />
@@ -52,12 +53,19 @@
 			<Form.Control>
 				{#snippet children({ props })}
 					<Form.Label>{'Confirm Password'}</Form.Label>
-					<Input {...props} bind:value={$formData.confirmPassword} type="password" />
+					<PasswordInput
+						disabled={$submitting}
+						bind:password={$formData.confirmPassword}
+						{...props}
+					/>
 				{/snippet}
 			</Form.Control>
 			<Form.FieldErrors />
 		</Form.Field>
 	{/if}
 
-	<Form.Button class="mt-6" disabled={hasErrors}>Submit</Form.Button>
+	<Form.Button class="mt-6" disabled={$submitting || $allErrors.length !== 0}>
+		Submit
+		<LoadingSpinner loaded={!$submitting} />
+	</Form.Button>
 </form>

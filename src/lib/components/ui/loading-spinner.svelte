@@ -9,6 +9,6 @@
 
 {#if !loaded}
 	<div class={classes}>
-		<LoaderCircle class={'h-[100%] w-[1em] animate-spin'} strokeWidth={stroke} />
+		<LoaderCircle class="h-[100%] w-[1em] animate-spin" strokeWidth={stroke} />
 	</div>
 {/if}
