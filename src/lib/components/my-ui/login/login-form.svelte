@@ -1,32 +1,45 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { superForm } from 'sveltekit-superforms';
-	import {
-		loginSchema,
-		registerSchema,
-		type LoginSchema,
-		type RegisterSchema
-	} from '$lib/schemas/AuthSchema';
+	import { zod, type ZodObjectType } from 'sveltekit-superforms/adapters';
+	import { superForm, defaults } from 'sveltekit-superforms';
+	import { toast } from 'svelte-sonner';
+	import { loginSchema, registerSchema } from '$lib/schemas/AuthSchema';
 	import LoadingSpinner from '$lib/components/ui/loading-spinner.svelte';
 	import PasswordInput from '$lib/components/ui/password-input.svelte';
+	import { onMount } from 'svelte';
 
 	let {
-		dataForm,
+		schemaForm,
 		actionStr
 	}: {
-		dataForm: RegisterSchema | LoginSchema;
+		schemaForm: ZodObjectType;
 		actionStr: '?/login' | '?/register';
 	} = $props();
 
 	const isRegister = actionStr === '?/register';
 
-	const form = superForm(dataForm as RegisterSchema, {
-		validators: zodClient(isRegister ? registerSchema : loginSchema)
+	const form = superForm(defaults(zod(schemaForm)), {
+		validators: zod(isRegister ? registerSchema : loginSchema),
+		validationMethod: 'oninput',
+		SPA: true,
+		onUpdate({ form }) {
+			// TODO: send/validate on server
+		}
 	});
 
-	const { form: formData, submitting, allErrors, enhance } = form;
+	const { form: formData, submitting, allErrors, errors, message, enhance } = form;
+
+	$effect(() => {
+		if ($message && $message !== '') {
+			toast($message);
+		}
+	});
+
+	onMount(() => {
+		// $formData.email = 'test@gmail.coma';
+		// $formData.password = 'Password1!';
+	});
 </script>
 
 <form method="POST" action={actionStr} use:enhance>

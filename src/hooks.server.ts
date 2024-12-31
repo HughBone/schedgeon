@@ -1,30 +1,41 @@
-import type { Handle, RequestEvent } from '@sveltejs/kit';
-// import { query } from '$lib/server/db';
+import { JWT_SECRET } from '$env/static/private';
+import { mongoClient, users } from '$lib/server/mongodb';
+import type { DBUser } from '$lib/types/db_types/DBUser';
+import jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
 
-// Attach authorization to each server request (role may have changed)
-async function attachUserToRequestEvent(sessionId: string, event: RequestEvent) {
-	// const sql = `SELECT * FROM get_session($1);`;
-	// const { rows } = await query(sql, [sessionId]);
-	// if (rows?.length > 0) {
-	// 	event.locals.user = <User>rows[0].get_session;
-	// }
-}
+const getUserFromDB = async (userId: string) => {
+	try {
+		await mongoClient.connect();
 
-// Invoked for each endpoint called and initially for SSR router
-// export const handle: Handle = async ({ event, resolve }) => {
-// 	const { cookies } = event;
-// 	const sessionId = cookies.get('session');
+		const user = await users.findOne({ _id: new ObjectId(userId) });
+		if (user !== null) {
+			console.log('user found');
+			return user as DBUser;
+		} else {
+			console.log('user not found');
+		}
+	} finally {
+		await mongoClient.close();
+	}
+};
 
-// 	// before endpoint or page is called
-// 	if (sessionId) {
-// 		await attachUserToRequestEvent(sessionId, event);
-// 	}
+export const handle = async ({ event, resolve }) => {
+	const token = event.cookies.get('token');
 
-// 	if (!event.locals.user) cookies.delete('session', { path: '/' });
+	if (token) {
+		console.log('token found');
+		try {
+			const userId = jwt.verify(token, JWT_SECRET);
 
-// 	const response = await resolve(event);
+			if (userId !== undefined && userId !== null && typeof userId === 'string') {
+				console.log('jwt is valid');
+				event.locals.user = getUserFromDB(userId as string);
+			}
+		} catch (err) {
+			// Invalid token
+		}
+	}
 
-// 	// after endpoint or page is called
-
-// 	return response;
-// };
+	return resolve(event);
+};
