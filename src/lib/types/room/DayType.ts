@@ -1,6 +1,6 @@
-import type { DateTime } from 'luxon';
+import type { DateTime } from "luxon";
 
 export interface DayType {
-	start: DateTime;
-	end: DateTime;
+  start: DateTime;
+  end: DateTime;
 }

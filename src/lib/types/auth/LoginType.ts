@@ -1,1 +1,1 @@
-export type LoginType = 'login' | 'logout' | 'register';
+export type LoginType = "login" | "logout" | "register";

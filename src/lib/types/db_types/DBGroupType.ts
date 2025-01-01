@@ -1,6 +1,6 @@
-import type { ObjectId } from 'mongodb';
+import type { ObjectId } from "mongodb";
 
 export interface DBGroupType {
-	_id: ObjectId;
-	name: string;
+  _id: ObjectId;
+  name: string;
 }
