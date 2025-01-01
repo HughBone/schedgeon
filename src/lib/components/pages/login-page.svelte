@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Tabs from "$lib/components/ui/tabs/index.js";
-  import * as Card from "$lib/components/ui/card/index.js";
+  import * as Tabs from "$ui/tabs/index.js";
+  import * as Card from "$ui/card/index.js";
   import LoginForm from "$lib/components/my-ui/login/login-form.svelte";
   import { loginSchema, registerSchema } from "$lib/schemas/AuthSchema";
 

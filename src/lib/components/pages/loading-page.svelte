@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LoadingSpinner from "$lib/components/ui/loading-spinner.svelte";
+  import LoadingSpinner from "$ui/loading-spinner.svelte";
 </script>
 
 <div class="m-auto flex h-full w-full flex-col items-center justify-center">

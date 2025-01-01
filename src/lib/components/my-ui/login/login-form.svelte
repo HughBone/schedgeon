@@ -1,12 +1,12 @@
 <script lang="ts">
-  import * as Form from "$lib/components/ui/form/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
+  import * as Form from "$ui/form/index.js";
+  import { Input } from "$ui/input/index.js";
   import { zod, type ZodObjectType } from "sveltekit-superforms/adapters";
   import { superForm, defaults } from "sveltekit-superforms";
   import { toast } from "svelte-sonner";
   import { loginSchema, registerSchema } from "$lib/schemas/AuthSchema";
-  import LoadingSpinner from "$lib/components/ui/loading-spinner.svelte";
-  import PasswordInput from "$lib/components/ui/password-input.svelte";
+  import LoadingSpinner from "$ui/loading-spinner.svelte";
+  import PasswordInput from "$ui/password-input.svelte";
   import { onMount } from "svelte";
 
   let {

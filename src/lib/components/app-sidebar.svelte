@@ -1,7 +1,7 @@
 <script lang="ts">
   import House from "lucide-svelte/icons/house";
   import Settings from "lucide-svelte/icons/settings";
-  import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import * as Sidebar from "$ui/sidebar/index.js";
 
   // Menu items.
   const items = $derived([

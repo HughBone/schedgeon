@@ -1,7 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import { ModeWatcher } from "mode-watcher";
-  import { Toaster } from "$lib/components/ui/sonner/index.js";
+  import { Toaster } from "$ui/sonner/index.js";
   import { page } from "$app/state";
   import { onMount } from "svelte";
 
