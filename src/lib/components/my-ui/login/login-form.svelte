@@ -8,17 +8,17 @@
   import LoadingSpinner from "$ui/loading-spinner.svelte";
   import PasswordInput from "$ui/password-input.svelte";
   import { onMount } from "svelte";
-  import type { LoginResponse } from "$lib/types/auth/LoginType";
+  import type { LoginResponse, LoginType } from "$lib/types/auth/LoginType";
 
   let {
     schemaForm,
-    formName,
+    auth,
   }: {
     schemaForm: ZodObjectType;
-    formName: "login" | "register";
+    auth: LoginType;
   } = $props();
 
-  const isRegister = formName === "register";
+  const isRegister = auth === "register";
 
   const form = superForm(defaults(zod(schemaForm)), {
     validators: zod(isRegister ? registerSchema : loginSchema),
@@ -27,7 +27,7 @@
     onUpdate: async ({ form }) => {
       if (form.valid) {
         // Send post request to server
-        const res: LoginResponse = await fetch("?formName=" + formName, {
+        const res: LoginResponse = await fetch(`/api/auth/${auth}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -1,68 +1,79 @@
-import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./$types";
-import type { LoginType } from "$lib/types/auth/LoginType";
+import {
+  loginSchema,
+  registerSchema,
+  type RegisterSchema,
+} from "$lib/schemas/AuthSchema";
+import { json, type RequestHandler } from "@sveltejs/kit";
+import { JWT_SECRET } from "$env/static/private";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { users, mongoClient } from "$lib/server/mongodb";
+import { type LoginType } from "$lib/types/auth/LoginType";
 
-export const POST: RequestHandler = async (event) => {
-  const { cookies } = event;
-  const { slug } = event.params;
-
-  let result;
-  let sql;
-
+export const POST: RequestHandler = async ({
+  request,
+  params,
+  cookies,
+  locals,
+}) => {
   try {
-    switch (slug as LoginType) {
-      case "logout":
-        if (event.locals.user) {
-          // else they are logged out / session ended
-          // sql = `CALL delete_session($1);`;
-          // result = await query(sql, [event.locals.user.id]);
-        }
-        cookies.delete("session", { path: "/" });
-        return json({ message: "Logout successful." });
-
-      case "login":
-        // sql = `SELECT authenticate($1) AS "authenticationResult";`;
-        break;
-      case "register":
-        // sql = `SELECT register($1) AS "authenticationResult";`;
-        break;
-      default:
-        error(404, "Invalid endpoint.");
+    const formName = params.slug as LoginType;
+    if (!formName) {
+      return json({ error: "invalid request" });
     }
 
-    // Only /auth/login and /auth/register at this point
-    const body = await event.request.json();
+    const data = (await request.json()) as RegisterSchema;
+    const validationResult =
+      formName === "login"
+        ? loginSchema.safeParse(data)
+        : registerSchema.safeParse(data);
 
-    // While client checks for these to be non-null, register() in the database does not
-    if (
-      slug == "register" &&
-      (!body.email || !body.password || !body.firstName || !body.lastName)
-    )
-      error(
-        400,
-        "Please supply all required fields: email, password, first and last name.",
-      );
+    if (!validationResult.success) {
+      return json({ error: "form not valid. hmmm..." });
+    }
 
-    // result = await query(sql, [JSON.stringify(body)]);
+    // parsed form is valid
+    // now validate server-specific errors
+
+    if (formName === "login") {
+      await mongoClient.connect();
+      const user = await users.findOne({ email: data.email });
+
+      if (user === null) {
+        return json({ formError: { email: "We couldn't find your email :(" } });
+      }
+
+      if (await bcrypt.compare(data.password, user.password)) {
+        // Create JWT with user id
+        const token = jwt.sign(user._id.toString(), JWT_SECRET);
+
+        cookies.set("token", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          path: "/",
+          maxAge: 2592000, // 30 days
+        });
+
+        return json({ success: true });
+      } else {
+        return json({ formError: { password: "Incorrect password" } });
+      }
+    } else if (formName === "register") {
+      // TODO: Register logic
+    } else if (formName === "logout") {
+      if (locals.user) {
+        // TODO: Logout logic
+        return json({ message: "Logout successful." });
+      } else {
+        return json({ error: "User already logged out." });
+      }
+    }
   } catch (err) {
-    error(503, "Could not communicate with database.");
+    console.log("auth error:", err);
+  } finally {
+    await mongoClient.close();
   }
 
-  // const { authenticationResult }: { authenticationResult: AuthenticationResult } = result.rows[0];
-
-  // if (!authenticationResult.user)
-  // 	// includes when a user tries to register an existing email account with wrong password
-  // 	error(authenticationResult.statusCode, authenticationResult.status);
-
-  // // Ensures hooks.server.ts:handle() will not delete session cookie
-  // event.locals.user = authenticationResult.user;
-  // cookies.set('session', authenticationResult.sessionId, {
-  // 	httpOnly: true,
-  // 	sameSite: 'lax',
-  // 	path: '/'
-  // });
-
-  // return json({ message: authenticationResult.status, user: authenticationResult.user });
-
-  return json({});
+  return json({ error: `unknown auth error` });
 };

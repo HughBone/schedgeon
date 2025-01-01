@@ -30,18 +30,18 @@
       <Tabs.Trigger value={SIGNUP}>Signup</Tabs.Trigger>
     </Tabs.List>
     <!-- Need div to stop tabs shifting vert center -->
-    <div class="min-h-[354px]">
+    <div class="min-h-[420px]">
       <Tabs.Content value={SIGNIN}>
         <Card.Root>
           <Card.Content class="space-y-2">
-            <LoginForm schemaForm={loginSchema} formName="login" />
+            <LoginForm schemaForm={loginSchema} auth="login" />
           </Card.Content>
         </Card.Root>
       </Tabs.Content>
       <Tabs.Content value={SIGNUP}>
         <Card.Root>
           <Card.Content class="space-y-2">
-            <LoginForm schemaForm={registerSchema} formName="register" />
+            <LoginForm schemaForm={registerSchema} auth="register" />
           </Card.Content>
         </Card.Root>
       </Tabs.Content>
