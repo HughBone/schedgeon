@@ -22,5 +22,5 @@ export const registerSchema = z
     }
   });
 
-export type LoginSchema = SuperValidated<Infer<typeof loginSchema>>;
-export type RegisterSchema = SuperValidated<Infer<typeof registerSchema>>;
+export type LoginSchema = Infer<typeof loginSchema>;
+export type RegisterSchema = Infer<typeof registerSchema>;

@@ -2,29 +2,62 @@
   import * as Form from "$ui/form/index.js";
   import { Input } from "$ui/input/index.js";
   import { zod, type ZodObjectType } from "sveltekit-superforms/adapters";
-  import { superForm, defaults } from "sveltekit-superforms";
+  import { superForm, defaults, setError } from "sveltekit-superforms";
   import { toast } from "svelte-sonner";
   import { loginSchema, registerSchema } from "$lib/schemas/AuthSchema";
   import LoadingSpinner from "$ui/loading-spinner.svelte";
   import PasswordInput from "$ui/password-input.svelte";
   import { onMount } from "svelte";
+  import type { LoginResponse } from "$lib/types/auth/LoginType";
 
   let {
     schemaForm,
-    actionStr,
+    formName,
   }: {
     schemaForm: ZodObjectType;
-    actionStr: "?/login" | "?/register";
+    formName: "login" | "register";
   } = $props();
 
-  const isRegister = actionStr === "?/register";
+  const isRegister = formName === "register";
 
   const form = superForm(defaults(zod(schemaForm)), {
     validators: zod(isRegister ? registerSchema : loginSchema),
     validationMethod: "oninput",
     SPA: true,
-    onUpdate({ form }) {
-      // TODO: send/validate on server
+    onUpdate: async ({ form }) => {
+      if (form.valid) {
+        // Send post request to server
+        const res: LoginResponse = await fetch("?formName=" + formName, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form.data),
+        })
+          .then((data) => data.json())
+          .catch(() => null);
+
+        if (!res) {
+          return setError(
+            form,
+            "Problem reaching server :(. Please try again later.",
+          );
+        }
+
+        if (res?.success) {
+          // TODO: navigate to /overview
+        }
+        // form-level error
+        else if (res?.error) {
+          return setError(form, res.error);
+        }
+        // field-level error
+        else if (res?.formError) {
+          for (const [field, errorStr] of Object.entries(res.formError)) {
+            setError(form, field, errorStr);
+          }
+        }
+      }
     },
   });
 
@@ -44,12 +77,12 @@
   });
 
   onMount(() => {
-    // $formData.email = 'test@gmail.coma';
-    // $formData.password = 'Password1!';
+    // $formData.email = "test@gmail.com";
+    // $formData.password = "Password1!";
   });
 </script>
 
-<form method="POST" action={actionStr} use:enhance>
+<form method="POST" use:enhance>
   <Form.Field {form} name="email">
     <Form.Control>
       {#snippet children({ props })}
@@ -92,4 +125,9 @@
     Submit
     <LoadingSpinner loaded={!$submitting} />
   </Form.Button>
+
+  <!-- form-level errors -->
+  <div class="text-md mt-2 text-destructive">
+    {$errors?._errors}
+  </div>
 </form>
